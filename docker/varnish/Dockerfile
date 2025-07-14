@@ -1,5 +1,9 @@
 FROM centos:7
 
+# Fix CentOS 7 mirror issues by using vault repositories
+RUN sed -i 's|mirrorlist=|#mirrorlist=|g' /etc/yum.repos.d/CentOS-*.repo && \
+    sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/CentOS-*.repo
+
 # install Varnish 6.5 from https://packagecloud.io/varnishcache
 RUN curl -s https://packagecloud.io/install/repositories/varnishcache/varnish65/script.rpm.sh | bash
 # the epel repo contains jemalloc
@@ -17,10 +21,8 @@ RUN ./bootstrap && \
     make check -j 4 && \
     make install
 
-
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
 COPY default.vcl /etc/varnish/default.vcl.in
-
 
 RUN chmod +x /usr/local/bin/entrypoint.sh
 RUN chmod +x /etc/varnish/default.vcl.in
